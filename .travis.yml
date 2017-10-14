@@ -24,8 +24,8 @@ matrix:
 #      - brew install cmake
 #      - brew install gdal
 #      - brew install geos
-      - brew install sdl sdl_image sdl_mixer
-      - sdl-config --version
+#      - brew install sdl sdl_image sdl_mixer
+#      - sdl-config --version
       - brew install ccache
       - export PATH="/usr/local/opt/ccache/libexec:$PATH"
       - brew install qt5
