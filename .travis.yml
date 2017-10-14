@@ -17,8 +17,9 @@ matrix:
   # OSX build
   - os: osx
     compiler: clang
+    cache:
+       directories:
     before_install:
-      - brew update
       - brew install curl
       - brew install p7zip
       - brew install gnu-tar
@@ -26,16 +27,20 @@ matrix:
 #      - brew install gdal
 #      - brew install geos
       - brew install sdl sdl_image sdl_mixer
+      - sdl-config --version
       - brew install ccache
       - export PATH="/usr/local/opt/ccache/libexec:$PATH"
-      - sdl-config --version
-      - make build_sdk_install
+      - brew install qt5
+      - brew link --force qt5
+      - brew update
+      - make arm_sdk_install
+
 
 script:
       - make config_new CCACHE=ccache
-      - make all_flight
-      - make fw_resource
-      - make gcs
+      # - make all_flight
+      - make -j2 fw_resource
+      - make -j2 gcs
 
 git:
         depth: 500
