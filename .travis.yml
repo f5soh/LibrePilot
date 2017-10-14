@@ -17,8 +17,6 @@ matrix:
   # OSX build
   - os: osx
     compiler: clang
-    cache:
-       directories:
     before_install:
       - brew install curl
       - brew install p7zip
