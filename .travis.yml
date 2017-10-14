@@ -26,11 +26,11 @@ matrix:
 #      - brew install geos
 #      - brew install sdl sdl_image sdl_mixer
 #      - sdl-config --version
-      - brew install ccache
-      - export PATH="/usr/local/opt/ccache/libexec:$PATH"
+#      - brew install ccache
+#      - export PATH="/usr/local/opt/ccache/libexec:$PATH"
+      - brew update
       - brew install qt5
       - brew link --force qt5
-      - brew update
       - make arm_sdk_install
 
 
