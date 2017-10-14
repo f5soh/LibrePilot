@@ -22,7 +22,7 @@ matrix:
       - brew install curl
       - brew install p7zip
       - brew install gnu-tar
-      - brew install cmake
+      # - brew install cmake
       - brew install gdal
       - brew install geos
       - brew install sdl sdl_image sdl_mixer
