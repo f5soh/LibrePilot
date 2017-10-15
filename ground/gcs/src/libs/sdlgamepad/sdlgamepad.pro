@@ -29,6 +29,10 @@ macx {
     INCLUDEPATH += /Library/Frameworks/SDL.framework/Headers
     SDL = -F/Library/Frameworks
 
+    # Travis SDL brew package
+    INCLUDEPATH += /usr/local/include/
+    SDL += -L/usr/local/lib -lSDLmain -lSDL
+
     # Add SDL to CFLAGS fixes build problems on mac
     QMAKE_CFLAGS += $$SDL
     QMAKE_CXXFLAGS += $$SDL
