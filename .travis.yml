@@ -22,9 +22,9 @@ matrix:
       - brew install curl
       - brew install p7zip
       - brew install gnu-tar
-   #   - brew install cmake
-      - brew install gdal
-      - brew install geos
+      # - brew install cmake
+      - brew outdated gdal || brew upgrade gdal
+      - brew outdated geos || brew upgrade geos
       - brew install sdl sdl_image sdl_mixer
       - sdl-config --version
       - sdl-config --cflags
