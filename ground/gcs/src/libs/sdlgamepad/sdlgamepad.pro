@@ -31,13 +31,14 @@ macx {
 
     # Travis SDL brew package
     INCLUDEPATH += /usr/local/include/
-    SDL += -L/usr/local/lib -lSDLmain -lSDL
+    SDLTRAVIS += -L/usr/local/lib -lSDLmain -lSDL
 
     # Add SDL to CFLAGS fixes build problems on mac
     QMAKE_CFLAGS += $$SDL
     QMAKE_CXXFLAGS += $$SDL
 
     # Let the linker know where to find the frameworks
+    LIBS += $$SDLTRAVIS
     LIBS += $$SDL
     LIBS += -framework OpenGL -framework SDL -framework Cocoa
 }
