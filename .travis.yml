@@ -35,6 +35,8 @@ matrix:
       - brew install qt5
       - brew link --force qt5
       - make arm_sdk_install
+      - make osg_install
+      - make osgearth_install
 
 
 script:
