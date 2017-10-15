@@ -41,9 +41,10 @@ matrix:
 
 script:
       - make config_new CCACHE=ccache
-      # - make all_flight
-      - make -j2 fw_resource
-      - make -j2 gcs
+      # - make -j2 all_flight
+      # - make -j2 fw_resource
+      # - make -j2 gcs
+      - make -j2 package
 
 git:
         depth: 500
