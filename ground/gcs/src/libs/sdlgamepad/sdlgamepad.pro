@@ -29,18 +29,25 @@ macx {
     INCLUDEPATH += /Library/Frameworks/SDL.framework/Headers
     SDL = -F/Library/Frameworks
 
-    # Travis SDL brew package
-    INCLUDEPATH += /usr/local/include/
-    SDLTRAVIS += -L/usr/local/lib/ -lSDLmain -lSDL
-
     # Add SDL to CFLAGS fixes build problems on mac
     QMAKE_CFLAGS += $$SDL
     QMAKE_CXXFLAGS += $$SDL
 
     # Let the linker know where to find the frameworks
-    LIBS += $$SDLTRAVIS
     LIBS += $$SDL
     LIBS += -framework OpenGL -framework Cocoa
+
+    _TRAVIS = $$(TRAVIS)
+
+    contains(_TRAVIS, true) {
+    message(Travis-CI environement detected. Using SDL libs from brew package)
+    INCLUDEPATH += /usr/local/include/
+    LIBS += -L/usr/local/lib/ -lSDLmain -lSDL
+    }
+    else {
+    message(Using SDL libs from framework)
+    LIBS += -framework SDL
+    }
 }
 
 !mac:LIBS += -lSDL
