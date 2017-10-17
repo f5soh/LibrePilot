@@ -37,7 +37,7 @@ macx {
     LIBS += $$SDL
     LIBS += -framework OpenGL -framework Cocoa
 
-    _TRAVIS = $$(TRAVIS)
+    _TRAVIS = false
 
     contains(_TRAVIS, true) {
         message(Travis-CI environement detected. Using SDL libs from brew package)

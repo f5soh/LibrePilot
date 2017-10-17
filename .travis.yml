@@ -37,6 +37,11 @@ matrix:
       - make arm_sdk_install
       - make osg_install
       - make osgearth_install
+      - wget https://www.libsdl.org/release/SDL-1.2.15.dmg
+      - hdiutil attach SDL-1.2.15.dmg
+      - sudo cp -r /Volumes/SDL/SDL.framework /Library/Frameworks/
+      - hdiutil detach /Volumes/SDL
+      - ls -l /Library/Frameworks/
 
 
 script:
