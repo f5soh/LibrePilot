@@ -35,18 +35,7 @@ macx {
 
     # Let the linker know where to find the frameworks
     LIBS += $$SDL
-    LIBS += -framework OpenGL -framework Cocoa
-
-    _TRAVIS = false
-
-    contains(_TRAVIS, true) {
-        message(Travis-CI environement detected. Using SDL libs from brew package)
-        INCLUDEPATH += /usr/local/include/
-        LIBS += -L/usr/local/lib/ -lSDLmain -lSDL
-    } else {
-        message(Using SDL libs from framework)
-        LIBS += -framework SDL
-    }
+    LIBS += -framework OpenGL -framework SDL -framework Cocoa
 }
 
 !mac:LIBS += -lSDL

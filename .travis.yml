@@ -25,10 +25,10 @@ matrix:
       # - brew install cmake
       - brew outdated gdal || brew upgrade gdal
       - brew outdated geos || brew upgrade geos
-      - brew install sdl sdl_image sdl_mixer
-      - sdl-config --version
-      - sdl-config --cflags
-      - sdl-config --libs
+      # - brew install sdl sdl_image sdl_mixer
+      # - sdl-config --version
+      # - sdl-config --cflags
+      # - sdl-config --libs
       - brew install ccache
       - export PATH="/usr/local/opt/ccache/libexec:$PATH"
       - ccache -V
@@ -46,9 +46,13 @@ matrix:
 
 script:
       - make config_new CCACHE=ccache
-      - make -j2 all_flight
-      - make -j2 fw_resource
-      - make -j2 gcs
+      - if [[ "$TRAVIS_TAG" != "" ]]; then
+           make -j2 all_flight
+           make -j2 fw_resource
+           make -j2 gcs
+        else
+           make -j2 package
+        fi
       
 git:
         depth: 500
