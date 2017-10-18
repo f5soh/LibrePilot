@@ -59,3 +59,12 @@ git:
 
 cache: ccache
 
+deploy:
+  provider: releases
+  api_key:
+    secure: FDxOrM2jMsswdMdHbecRXi7pCSQdsQWZajNhcmJHgm36FGgDCr7/GDXJ9k7ZUxdlhDR13K5itkAy6ppZ/dF17lqdLRlANOJp7GEvqm02V0cVBYnyznCXaRejjF5yemScipL9TOPCmWpKYZnzCHhrfghA9LSrJnaRrqR2ExvRfa56zIQUXEas3WutHDR9bYWFrq2O8Kgsxxi68HB3sVDruuEwxbY662KRdaK8FiLzki2wbl0SuFyoX5Tz116/dGTL3Z1zL7kEM17MGeYDjC3SyEod3ov2AMEZwGDwA0wdvk0T919KUe7ZJodi5A+14Kq+1UuIkqXCjCA75KD1geXDwpM8q1ImkfxROWMuHvOyoWWSuu97PfBLf+fe/3UUmZaYa1W71BImGaHj2osAG8AX0p3ZFo8aJiS4xhMhrwaqXq4VDDjKjHgSkRxtGfK+0Tq0iuk9Hu0BaRQu5sGIfLMNMJ3VWDaIG33AcYscKqP8FzZoocAXElBzVe9PtcNaHbT820X4ikKLI+lRDY/SvHKUlEIIqB3/MB/+eSjZfjyV36/EB4uGXCUfxBiqSa4QKKxZysu8VxGhzlS2LJDloCMUtRu0Jn1SNltVqIk0NVUf2Uu2LgH8C89CFXXEoDvspAlhZkx2Pk1OWaYohPGENcGTof9onjev4PoFQCSUc3jiZWk=
+  file: build/LibrePilot*
+  on:
+    repo: f5soh/LibrePilot
+    branch: OSX_Travis
+
