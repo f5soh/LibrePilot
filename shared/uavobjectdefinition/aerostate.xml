@@ -1,0 +1,16 @@
+<xml>
+    <object name="AeroState" singleinstance="true" settings="false" category="State">
+        <description>UAVO for Aero estimation.</description>
+        <field name="V1ms" units="m/s" type="float" elements="1" description="Estimated speed @Cl=1"/> 
+        <field name="V1kmh" units="km/h" type="float" elements="1" description="Estimated speed @Cl=1"/>  
+        <field name="Airspeed" units="km/h" type="float" elements="1"/>
+        <field name="Nz" units="G" type="float" elementnames="Current,Min,Max" description="Normal acceleration Z axis (G)" />
+        <field name="Cl" units="" type="float" elements="1" description="Estimated lift coefficient" />
+        <field name="Cd" units="" type="float" elements="1" description="Estimated drag coefficient" />
+        <field name="GlideRatio" units="" type="float" elements="1"/>
+        <access gcs="readwrite" flight="readwrite"/>
+        <telemetrygcs acked="false" updatemode="manual" period="0"/>
+        <telemetryflight acked="false" updatemode="periodic" period="150"/>
+        <logging updatemode="manual" period="0"/>
+    </object>
+</xml>

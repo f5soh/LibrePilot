@@ -9,7 +9,7 @@
 			<elementname>CallbackScheduler1</elementname>
 			<elementname>CallbackScheduler2</elementname>
 			<elementname>CallbackScheduler3</elementname>
-			<!-- fligth -->
+			<!-- flight -->
 			<elementname>Receiver</elementname>
 			<elementname>Stabilization</elementname>
 			<elementname>Actuator</elementname>
@@ -36,6 +36,7 @@
 			<elementname>UAVOFrskySensorHubBridge</elementname>
 			<elementname>UAVOMAVLinkBridge</elementname>
                         <elementname>AutoTune</elementname>
+			<elementname>Aero</elementname>
 		</elementnames>
 	</field> 
 	<field name="Running" units="bool" type="enum">
@@ -46,7 +47,7 @@
 			<elementname>CallbackScheduler1</elementname>
 			<elementname>CallbackScheduler2</elementname>
 			<elementname>CallbackScheduler3</elementname>
-			<!-- fligth -->
+			<!-- flight -->
 			<elementname>Receiver</elementname>
 			<elementname>Stabilization</elementname>
 			<elementname>Actuator</elementname>
@@ -73,6 +74,7 @@
 			<elementname>UAVOFrskySensorHubBridge</elementname>
 			<elementname>UAVOMAVLinkBridge</elementname>
 			<elementname>AutoTune</elementname>
+			<elementname>Aero</elementname>
 		</elementnames>
 		<options>
 			<option>False</option>
@@ -87,7 +89,7 @@
 			<elementname>CallbackScheduler1</elementname>
 			<elementname>CallbackScheduler2</elementname>
 			<elementname>CallbackScheduler3</elementname>
-			<!-- fligth -->
+			<!-- flight -->
 			<elementname>Receiver</elementname>
 			<elementname>Stabilization</elementname>
 			<elementname>Actuator</elementname>
@@ -114,6 +116,7 @@
 			<elementname>UAVOFrskySensorHubBridge</elementname>
 			<elementname>UAVOMAVLinkBridge</elementname>
 			<elementname>AutoTune</elementname>
+			<elementname>Aero</elementname>
 		</elementnames>
 	</field> 
         <access gcs="readonly" flight="readwrite"/>
