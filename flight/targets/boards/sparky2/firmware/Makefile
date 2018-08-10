@@ -53,6 +53,7 @@ MODULES += Logging
 MODULES += Telemetry
 MODULES += Notify
 
+OPTMODULES += Aero
 OPTMODULES += AutoTune
 OPTMODULES += ComUsbBridge
 OPTMODULES += UAVOMSPBridge
