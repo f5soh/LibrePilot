@@ -68,6 +68,7 @@ static bool aeroEnabled  = false;
 static AeroSettingsData aeroSettings;
 static DebugLogSettingsData settings;
 static float nz_filtered = 1.0f;
+static float airspeed_filtered = 1.0f;
 
 // Private functions
 static void aeroTask(void *parameters);
@@ -244,7 +245,9 @@ static void aeroTask(__attribute__((unused)) void *parameters)
             aerostateData.Nz.Min = aerostateData.Nz.Current;
         }
 
-        aerostateData.Airspeed = airspeedSensor.TrueAirspeed * 3.6f; // Km/h
+        // Airspeed
+        airspeed_filtered = ((1 - aeroSettings.AirSpeedLowPassAlpha) * (airspeedSensor.CalibratedAirspeed * 3.6f)) + (airspeed_filtered * (aeroSettings.AirSpeedLowPassAlpha));
+        aerostateData.Airspeed = airspeed_filtered; // Km/h
 
         if (docalc && (UAVObjGetNumInstances(AeroClHandle()) == needed_instances)) {
             // Lift coefficient

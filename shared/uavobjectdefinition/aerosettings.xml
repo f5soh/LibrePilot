@@ -8,6 +8,7 @@
         <field name="MeasurementPeriod" units="ms" type="uint8" elements="1" defaultvalue="100"/>
         <field name="StartCalcSource" units="" type="enum" elements="1" options="Disabled,Accessory0,Accessory1,Accessory2,Accessory3," defaultvalue="Disabled" description="Choose Accessory to start measurement, Disabled do calc all times"/>
         <field name="NzLowPassAlpha" units="" type="float" elements="1" defaultvalue="0.7" description="Nz (normal acceleration) filtering. 0 to disable" />
+        <field name="AirSpeedLowPassAlpha" units="" type="float" elements="1" defaultvalue="0.7" description="Airspeed filtering. 0 to disable" />
         <field name="ClLimits" units="coeff" type="float" elementnames="Min,Max,Resolution" defaultvalue="-1.2,1.2,0.05" description="Lift coefficient limits" />
         <field name="NzLimits" units="G" type="float" elementnames="Min,Max" defaultvalue="-10,10" description="Nz limits (G force)" />
         <access gcs="readwrite" flight="readwrite"/>
