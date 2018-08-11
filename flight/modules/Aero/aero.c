@@ -144,10 +144,10 @@ static void aeroTask(__attribute__((unused)) void *parameters)
     GPSTimeData time;
     AeroClData data;
 
-    bool docalc     = false;
-    bool debug_done = true;
+    bool docalc        = false;
+    bool debuglog_done = true;
     int publishedCountersInstances = 0;
-    uint16_t instId = 0;
+    uint16_t instId    = 0;
 
     // Main task loop
     portTickType lastSysTime = xTaskGetTickCount();
@@ -183,16 +183,21 @@ static void aeroTask(__attribute__((unused)) void *parameters)
             docalc = true;
         } else {
             AccessoryDesiredInstGet(aeroSettings.StartCalcSource - 1, &accessoryValue);
-            if (!docalc && (accessoryValue.AccessoryVal > 0.1f)) {
-                // Reset Min/max values
+            if (!docalc && (accessoryValue.AccessoryVal > 0.2f)) {
+                // Accessory Max
+                // Reset Min/max values and start estimation
                 aerostateData.Nz.Max = aerostateData.Nz.Current;
                 aerostateData.Nz.Min = aerostateData.Nz.Current;
+                aerostateData.Airspeed.Max = aerostateData.Airspeed.Current;
+                aerostateData.Airspeed.Min = aerostateData.Airspeed.Current;
                 docalc = true;
-                debug_done = true;
-            } else if (accessoryValue.AccessoryVal < -0.1f) {
-                docalc     = false;
-                debug_done = false;
-            } else if (!debug_done) {
+                debuglog_done = true;
+            } else if (accessoryValue.AccessoryVal < -0.2f) {
+                // Accessory Min
+                docalc = false;
+                debuglog_done = false;
+            } else if (!debuglog_done) {
+                // Accessory Middle : store flight template from UAVO AeroCl to onboard flash
                 if (instId == 0) {
                     // Enable log
                     DebugLogSettingsGet(&settings);
@@ -204,9 +209,9 @@ static void aeroTask(__attribute__((unused)) void *parameters)
                 instId++;
 
                 if (instId > UAVObjGetNumInstances(AeroClHandle())) {
-                    debug_done = true;
+                    debuglog_done = true;
                     // Reset for future storage process
-                    instId     = 0;
+                    instId = 0;
 
                     // Add time info to log
                     GPSTimeGet(&time);
@@ -230,7 +235,6 @@ static void aeroTask(__attribute__((unused)) void *parameters)
         // Estimated speed v1ms (m/s) @Cl=1
         // sqrt((2 * mass_kg * homeLocation.g_e) / (aeroSettings.Rho * wing_area_m2 * Cl))
         float v1ms = sqrt((2 * mass_kg * homeLocation.g_e) / (aeroSettings.Rho * wing_area_m2));
-        aerostateData.V1ms  = v1ms; // m/s
         aerostateData.V1kmh = v1ms * 3.6f; // km/h
 
         // Normal Acceleration (G unit)
@@ -247,7 +251,16 @@ static void aeroTask(__attribute__((unused)) void *parameters)
 
         // Airspeed
         airspeed_filtered = ((1 - aeroSettings.AirSpeedLowPassAlpha) * (airspeedSensor.CalibratedAirspeed * 3.6f)) + (airspeed_filtered * (aeroSettings.AirSpeedLowPassAlpha));
-        aerostateData.Airspeed = airspeed_filtered; // Km/h
+        aerostateData.Airspeed.Current = airspeed_filtered; // Km/h
+        aerostateData.Temperature = airspeedSensor.Temperature - 273.15f; // °Celsius
+
+        // Update Airspeed Min/Max
+        if (aerostateData.Airspeed.Current > aerostateData.Airspeed.Max) {
+            aerostateData.Airspeed.Max = aerostateData.Airspeed.Current;
+        }
+        if (aerostateData.Airspeed.Current < aerostateData.Airspeed.Min) {
+            aerostateData.Airspeed.Min = aerostateData.Airspeed.Current;
+        }
 
         if (docalc && (UAVObjGetNumInstances(AeroClHandle()) == needed_instances)) {
             // Lift coefficient

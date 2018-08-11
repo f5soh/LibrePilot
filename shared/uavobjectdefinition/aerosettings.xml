@@ -1,7 +1,6 @@
 <xml>
     <object name="AeroSettings" singleinstance="true" settings="true" category="Sensors">
         <description>Settings for the @ref Aero module</description>
-        <field name="Temperature" units="" type="enum" elements="1" options="Baro,AirSpeed"  defaultvalue="AirSpeed"/>
         <field name="Mass" units="g" type="uint16" elements="1" defaultvalue="1500" description="Model weight (g)"/>
         <field name="WingSurface" units="dm^2" type="uint16" elements="1" defaultvalue="35" description="Wing area (dm2)"/>
         <field name="Rho" units="Kg/m^3" type="float" elements="1" defaultvalue="1.2" description="Air density Kg/m3" />
