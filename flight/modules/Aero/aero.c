@@ -48,9 +48,14 @@
 #include <velocitystate.h>
 #include "taskinfo.h"
 
+#include "debuglogsettings.h"
+#include "debuglogcontrol.h"
+#include "debuglogstatus.h"
+#include "debuglogentry.h"
+
 // Private constants
 
-#define STACK_SIZE_BYTES 650
+#define STACK_SIZE_BYTES 850
 
 
 #define TASK_PRIORITY    (tskIDLE_PRIORITY + 1)
@@ -61,6 +66,7 @@
 static xTaskHandle taskHandle;
 static bool aeroEnabled  = false;
 static AeroSettingsData aeroSettings;
+static DebugLogSettingsData settings;
 static float nz_filtered = 1.0f;
 
 // Private functions
@@ -133,30 +139,33 @@ static void aeroTask(__attribute__((unused)) void *parameters)
     HomeLocationData homeLocation;
     HomeLocationGet(&homeLocation);
 
-    bool docalc = false;
-    int publishedCountersInstances = 0;
+    AccessoryDesiredData accessoryValue;
+    GPSTimeData time;
     AeroClData data;
-    //int count   = 0;
+
+    bool docalc     = false;
+    bool debug_done = true;
+    int publishedCountersInstances = 0;
+    uint16_t instId = 0;
 
     // Main task loop
     portTickType lastSysTime = xTaskGetTickCount();
     while (1) {
         vTaskDelayUntil(&lastSysTime, aeroSettings.MeasurementPeriod / portTICK_RATE_MS);
 
-        int needed_instances = (aeroSettings.ClLimits.Max - aeroSettings.ClLimits.Min) / aeroSettings.ClLimits.Resolution;
+        int needed_instances = 1 + (aeroSettings.ClLimits.Max - aeroSettings.ClLimits.Min) / aeroSettings.ClLimits.Resolution;
 
         // Spend some loops and create Cl counters
-        if (publishedCountersInstances < needed_instances + 1) {
+        if (publishedCountersInstances < needed_instances) {
             if (publishedCountersInstances != 0) {
                 AeroClCreateInstance();
             }
             data.Cl = aeroSettings.ClLimits.Min + (publishedCountersInstances * aeroSettings.ClLimits.Resolution);
-            data.ClCount = 0; //roundf((data.Cl / aeroSettings.ClLimits.Resolution) + fabsf(aeroSettings.ClLimits.Min / aeroSettings.ClLimits.Resolution));
+            data.ClCount = 0; // roundf((data.Cl / aeroSettings.ClLimits.Resolution) + fabsf(aeroSettings.ClLimits.Min / aeroSettings.ClLimits.Resolution));
 
             AeroClInstSet(publishedCountersInstances, &data);
             publishedCountersInstances++;
         }
-
 
         // Get current raw Airspeed sensor data
         AirspeedSensorData airspeedSensor;
@@ -169,7 +178,6 @@ static void aeroTask(__attribute__((unused)) void *parameters)
         VelocityStateData velocityState;
         VelocityStateGet(&velocityState);
 
-        AccessoryDesiredData accessoryValue;
         if (aeroSettings.StartCalcSource == AEROSETTINGS_STARTCALCSOURCE_DISABLED) {
             docalc = true;
         } else {
@@ -179,8 +187,35 @@ static void aeroTask(__attribute__((unused)) void *parameters)
                 aerostateData.Nz.Max = aerostateData.Nz.Current;
                 aerostateData.Nz.Min = aerostateData.Nz.Current;
                 docalc = true;
-            } else if (accessoryValue.AccessoryVal < 0.1f) {
-                docalc = false;
+                debug_done = true;
+            } else if (accessoryValue.AccessoryVal < -0.1f) {
+                docalc     = false;
+                debug_done = false;
+            } else if (!debug_done) {
+                if (instId == 0) {
+                    // Enable log
+                    DebugLogSettingsGet(&settings);
+                    settings.LoggingEnabled = DEBUGLOGSETTINGS_LOGGINGENABLED_ALWAYS;
+                    DebugLogSettingsSet(&settings);
+                }
+
+                UAVObjInstanceLogging(AeroClHandle(), instId);
+                instId++;
+
+                if (instId > UAVObjGetNumInstances(AeroClHandle())) {
+                    debug_done = true;
+                    // Reset for future storage process
+                    instId     = 0;
+
+                    // Add time info to log
+                    GPSTimeGet(&time);
+                    if (time.Year > 2000) {
+                        PIOS_DEBUGLOG_Printf("Flight Template on %d/%d/%d at %d:%d", time.Day, time.Month, time.Year, time.Hour, time.Minute);
+                    }
+                    // Disable log
+                    settings.LoggingEnabled = DEBUGLOGSETTINGS_LOGGINGENABLED_DISABLED;
+                    DebugLogSettingsSet(&settings);
+                }
             }
         }
 
@@ -211,9 +246,9 @@ static void aeroTask(__attribute__((unused)) void *parameters)
 
         aerostateData.Airspeed = airspeedSensor.TrueAirspeed * 3.6f; // Km/h
 
-        if (docalc && ((publishedCountersInstances - 1) == needed_instances)) {
+        if (docalc && (UAVObjGetNumInstances(AeroClHandle()) == needed_instances)) {
             // Lift coefficient
-            float cl = aerostateData.Nz.Current * ((v1ms * v1ms) / (airspeedSensor.TrueAirspeed * airspeedSensor.TrueAirspeed));
+            float cl     = aerostateData.Nz.Current * ((v1ms * v1ms) / (airspeedSensor.TrueAirspeed * airspeedSensor.TrueAirspeed));
             aerostateData.Cl = boundf(cl, aeroSettings.ClLimits.Min, aeroSettings.ClLimits.Max);
             int cl_index = roundf((aerostateData.Cl / aeroSettings.ClLimits.Resolution) + fabsf(aeroSettings.ClLimits.Min / aeroSettings.ClLimits.Resolution));
             AeroClInstGet(cl_index, &data);
@@ -227,7 +262,7 @@ static void aeroTask(__attribute__((unused)) void *parameters)
                 aerostateData.GlideRatio = 0;
             }
         } else {
-            aerostateData.Cl = 0; 
+            aerostateData.Cl = 0;
         }
 
         // Set the UAVO
