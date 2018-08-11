@@ -1,0 +1,11 @@
+<xml>
+    <object name="AeroCl" singleinstance="false" settings="false" category="State">
+        <description>Store Cl occurences. Used by the @ref Aero module</description>
+        <field name="Cl" units="" type="float" elements="1" />
+        <field name="ClCount" units="" type="uint32" elements="1" />
+        <access gcs="readwrite" flight="readwrite"/>
+        <telemetrygcs acked="true" updatemode="manual" period="0"/>
+        <telemetryflight acked="true" updatemode="periodic" period="3000"/>
+        <logging updatemode="manual" period="0"/>
+    </object>
+</xml>

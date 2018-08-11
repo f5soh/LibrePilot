@@ -33,6 +33,7 @@
 #include <CoordinateConversions.h>
 #include <aerosettings.h>
 #include <aerostate.h>
+#include <aerocl.h>
 #include <barosensor.h>
 #include <airspeedsensor.h>
 #include <accelstate.h>
@@ -108,6 +109,7 @@ int32_t AeroInitialize()
 #endif
 
     AeroStateInitialize();
+    AeroClInitialize();
 
     AeroSettingsConnectCallback(AeroSettingsUpdatedCb);
 
@@ -131,10 +133,30 @@ static void aeroTask(__attribute__((unused)) void *parameters)
     HomeLocationData homeLocation;
     HomeLocationGet(&homeLocation);
 
+    bool docalc = false;
+    int publishedCountersInstances = 0;
+    AeroClData data;
+    //int count   = 0;
+
     // Main task loop
     portTickType lastSysTime = xTaskGetTickCount();
     while (1) {
         vTaskDelayUntil(&lastSysTime, aeroSettings.MeasurementPeriod / portTICK_RATE_MS);
+
+        int needed_instances = (aeroSettings.ClLimits.Max - aeroSettings.ClLimits.Min) / aeroSettings.ClLimits.Resolution;
+
+        // Spend some loops and create Cl counters
+        if (publishedCountersInstances < needed_instances + 1) {
+            if (publishedCountersInstances != 0) {
+                AeroClCreateInstance();
+            }
+            data.Cl = aeroSettings.ClLimits.Min + (publishedCountersInstances * aeroSettings.ClLimits.Resolution);
+            data.ClCount = 0; //roundf((data.Cl / aeroSettings.ClLimits.Resolution) + fabsf(aeroSettings.ClLimits.Min / aeroSettings.ClLimits.Resolution));
+
+            AeroClInstSet(publishedCountersInstances, &data);
+            publishedCountersInstances++;
+        }
+
 
         // Get current raw Airspeed sensor data
         AirspeedSensorData airspeedSensor;
@@ -146,6 +168,21 @@ static void aeroTask(__attribute__((unused)) void *parameters)
 
         VelocityStateData velocityState;
         VelocityStateGet(&velocityState);
+
+        AccessoryDesiredData accessoryValue;
+        if (aeroSettings.StartCalcSource == AEROSETTINGS_STARTCALCSOURCE_DISABLED) {
+            docalc = true;
+        } else {
+            AccessoryDesiredInstGet(aeroSettings.StartCalcSource - 1, &accessoryValue);
+            if (!docalc && (accessoryValue.AccessoryVal > 0.1f)) {
+                // Reset Min/max values
+                aerostateData.Nz.Max = aerostateData.Nz.Current;
+                aerostateData.Nz.Min = aerostateData.Nz.Current;
+                docalc = true;
+            } else if (accessoryValue.AccessoryVal < 0.1f) {
+                docalc = false;
+            }
+        }
 
         float mass_kg = (float)(aeroSettings.Mass) / 1000.0f;
         float wing_area_m2 = (float)(aeroSettings.WingSurface) / 100.0f;
@@ -174,15 +211,23 @@ static void aeroTask(__attribute__((unused)) void *parameters)
 
         aerostateData.Airspeed = airspeedSensor.TrueAirspeed * 3.6f; // Km/h
 
-        // Lift coefficient
-        float cl = aerostateData.Nz.Current * ((v1ms * v1ms) / (airspeedSensor.TrueAirspeed * airspeedSensor.TrueAirspeed));
-        aerostateData.Cl = boundf(cl, aeroSettings.ClLimits.Min, aeroSettings.ClLimits.Max);
-        if (velocityState.Down > 0.2f) {
-            aerostateData.GlideRatio = airspeedSensor.TrueAirspeed / velocityState.Down;
-            aerostateData.Cd = aerostateData.Cl / aerostateData.GlideRatio;
+        if (docalc && ((publishedCountersInstances - 1) == needed_instances)) {
+            // Lift coefficient
+            float cl = aerostateData.Nz.Current * ((v1ms * v1ms) / (airspeedSensor.TrueAirspeed * airspeedSensor.TrueAirspeed));
+            aerostateData.Cl = boundf(cl, aeroSettings.ClLimits.Min, aeroSettings.ClLimits.Max);
+            int cl_index = roundf((aerostateData.Cl / aeroSettings.ClLimits.Resolution) + fabsf(aeroSettings.ClLimits.Min / aeroSettings.ClLimits.Resolution));
+            AeroClInstGet(cl_index, &data);
+            data.ClCount++;
+            AeroClInstSet(cl_index, &data);
+            if (velocityState.Down > 0.2f) {
+                aerostateData.GlideRatio = airspeedSensor.TrueAirspeed / velocityState.Down;
+                aerostateData.Cd = aerostateData.Cl / aerostateData.GlideRatio;
+            } else {
+                aerostateData.Cd = 0;
+                aerostateData.GlideRatio = 0;
+            }
         } else {
-            aerostateData.GlideRatio = 0;
-            aerostateData.Cd = 0;
+            aerostateData.Cl = 0; 
         }
 
         // Set the UAVO
