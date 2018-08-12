@@ -48,10 +48,12 @@
 #include <velocitystate.h>
 #include "taskinfo.h"
 
+#ifdef PIOS_INCLUDE_DEBUGLOG
 #include "debuglogsettings.h"
 #include "debuglogcontrol.h"
 #include "debuglogstatus.h"
 #include "debuglogentry.h"
+#endif /* PIOS_INCLUDE_DEBUGLOG */
 
 // Private constants
 
@@ -66,7 +68,6 @@
 static xTaskHandle taskHandle;
 static bool aeroEnabled  = false;
 static AeroSettingsData aeroSettings;
-static DebugLogSettingsData settings;
 static float nz_filtered = 1.0f;
 static float airspeed_filtered = 1.0f;
 
@@ -141,13 +142,17 @@ static void aeroTask(__attribute__((unused)) void *parameters)
     HomeLocationGet(&homeLocation);
 
     AccessoryDesiredData accessoryValue;
-    GPSTimeData time;
     AeroClData data;
 
-    bool docalc        = false;
+    bool docalc = false;
     bool debuglog_done = true;
     int publishedCountersInstances = 0;
-    uint16_t instId    = 0;
+
+#ifdef PIOS_INCLUDE_DEBUGLOG
+    static DebugLogSettingsData settings;
+    uint16_t instId = 0;
+    GPSTimeData time;
+#endif /* PIOS_INCLUDE_DEBUGLOG */
 
     // Main task loop
     portTickType lastSysTime = xTaskGetTickCount();
@@ -197,6 +202,7 @@ static void aeroTask(__attribute__((unused)) void *parameters)
                 docalc = false;
                 debuglog_done = false;
             } else if (!debuglog_done) {
+#ifdef PIOS_INCLUDE_DEBUGLOG
                 // Accessory Middle : store flight template from UAVO AeroCl to onboard flash
                 if (instId == 0) {
                     // Enable log
@@ -222,6 +228,7 @@ static void aeroTask(__attribute__((unused)) void *parameters)
                     settings.LoggingEnabled = DEBUGLOGSETTINGS_LOGGINGENABLED_DISABLED;
                     DebugLogSettingsSet(&settings);
                 }
+#endif /* PIOS_INCLUDE_DEBUGLOG */
             }
         }
 
