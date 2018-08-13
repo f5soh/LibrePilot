@@ -57,7 +57,7 @@
 
 // Private constants
 
-#define STACK_SIZE_BYTES 850
+#define STACK_SIZE_BYTES 1000
 
 
 #define TASK_PRIORITY    (tskIDLE_PRIORITY + 1)
