@@ -1,8 +1,9 @@
 <xml>
     <object name="AeroSettings" singleinstance="true" settings="true" category="Sensors">
         <description>Settings for the @ref Aero module</description>
-        <field name="Mass" units="g" type="uint16" elements="1" defaultvalue="1500" description="Model weight (g)"/>
-        <field name="WingSurface" units="dm^2" type="uint16" elements="1" defaultvalue="35" description="Wing area (dm2)"/>
+        <field name="Model" units="g - dm^2" type="uint16" elementnames="Mass,WingSurface" defaultvalue="1500,35" description="Model settings" />
+        <field name="Vx" units="km/h" elements="3" type="float" defaultvalue="40, 70, 100" description="Airspeed for reference sink values" />
+        <field name="Vz" units="m/s" elements="3" type="float" defaultvalue="-0.6, -1.8, -6.5"description="Sink for reference airspeed values (negative numbers)" />
         <field name="Rho" units="Kg/m^3" type="float" elements="1" defaultvalue="1.2" description="Air density Kg/m3" />
         <field name="MeasurementPeriod" units="ms" type="uint8" elements="1" defaultvalue="100"/>
         <field name="StartCalcSource" units="" type="enum" elements="1" options="Disabled,Accessory0,Accessory1,Accessory2,Accessory3," defaultvalue="Disabled" description="Choose Accessory to start measurement, Disabled do calc all times"/>

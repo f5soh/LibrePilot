@@ -232,8 +232,8 @@ static void aeroTask(__attribute__((unused)) void *parameters)
             }
         }
 
-        float mass_kg = (float)(aeroSettings.Mass) / 1000.0f;
-        float wing_area_m2 = (float)(aeroSettings.WingSurface) / 100.0f;
+        float mass_kg = (float)(aeroSettings.Model.Mass) / 1000.0f;
+        float wing_area_m2 = (float)(aeroSettings.Model.WingSurface) / 100.0f;
 
         // From http://scherrer.pagesperso-orange.fr/matthieu/aero/papers/Which%20cl%20our%20model%20flies.pdf
         // M. Scherrer :  Which CLs is your model flying ?
@@ -268,6 +268,29 @@ static void aeroTask(__attribute__((unused)) void *parameters)
         if (aerostateData.Airspeed.Current < aerostateData.Airspeed.Min) {
             aerostateData.Airspeed.Min = aerostateData.Airspeed.Current;
         }
+
+        // Vx/Vz Airspeed/Sink polar
+        // Ax^2 + Bx + C = y
+        // Convert input sink values (m/s) to km/h
+        float vz0kmh = aeroSettings.Vz[0] * 3.6f;
+        float vz1kmh = aeroSettings.Vz[1] * 3.6f;
+        float vz2kmh = aeroSettings.Vz[2] * 3.6f;
+
+        // Airspeed values
+        float vx0    = aeroSettings.Vx[0];
+        float vx1    = aeroSettings.Vx[1];
+        float vx2    = aeroSettings.Vx[2];
+
+        // Sink polar coefficients calculation
+        float a = ((vx1 - vx2) * (vz0kmh - vz2kmh) + (vx2 - vx0) * (vz1kmh - vz2kmh)) / ((vx0 * vx0) * (vx1 - vx2) + (vx1 * vx1) * (vx2 - vx0) + (vx2 * vx2) * (vx0 - vx1));
+        float b = (vz1kmh - vz2kmh - a * ((vx1 * vx1) - (vx2 * vx2))) / (vx1 - vx2);
+        float c = vz2kmh - a * (vx2 * vx2) - b * vx2;
+        aerostateData.VzPolarDef.a = a;
+        aerostateData.VzPolarDef.b = b;
+        aerostateData.VzPolarDef.c = c;
+
+        // Reference sink in m/s, for current airspeed (filtered)
+        aerostateData.VzRef = ((a * aerostateData.Airspeed.Current * aerostateData.Airspeed.Current) + (b * aerostateData.Airspeed.Current) + c) / 3.6f;
 
         if (docalc && (UAVObjGetNumInstances(AeroClHandle()) == needed_instances)) {
             // Lift coefficient

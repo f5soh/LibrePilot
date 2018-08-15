@@ -5,6 +5,8 @@
         <field name="Airspeed" units="km/h" type="float" elementnames="Current,Min,Max"/>
         <field name="Temperature" units="°C" type="float" elements="1"/> 
         <field name="Nz" units="G" type="float" elementnames="Current,Min,Max" description="Normal acceleration Z axis (G)" />
+        <field name="VzPolarDef" units="" type="float" elementnames="a,b,c" description="Calculated Vz polar coefficients" />
+        <field name="VzRef" units="" type="float" elements="1" description="Reference sink from polar, for current airspeed" />        
         <field name="Cl" units="" type="float" elements="1" description="Estimated lift coefficient" />
         <field name="Cd" units="" type="float" elements="1" description="Estimated drag coefficient" />
         <field name="GlideRatio" units="" type="float" elements="1"/>
