@@ -184,6 +184,9 @@ static void aeroTask(__attribute__((unused)) void *parameters)
         VelocityStateData velocityState;
         VelocityStateGet(&velocityState);
 
+        PositionStateData positionState;
+        PositionStateGet(&positionState);
+
         if (aeroSettings.StartCalcSource == AEROSETTINGS_STARTCALCSOURCE_DISABLED) {
             docalc = true;
         } else {
@@ -290,6 +293,16 @@ static void aeroTask(__attribute__((unused)) void *parameters)
         aerostateData.VzPolarDef.a = a;
         aerostateData.VzPolarDef.b = b;
         aerostateData.VzPolarDef.c = c;
+
+        // Potential energy
+        // m * g * h
+        float Epot = mass_kg * homeLocation.g_e * (-positionState.Down);
+
+        // Kinetic energy
+        // 0.5 * m * v²
+        float Ekin = 0.5f * mass_kg * ((airspeed_filtered * airspeed_filtered));
+
+        aerostateData.TotalEnergy = Epot + Ekin;
 
         // Reference sink in m/s, for current airspeed (filtered)
         aerostateData.VzRef = ((a * airspeed_filtered * airspeed_filtered) + (b * airspeed_filtered) + c) / 3.6f;

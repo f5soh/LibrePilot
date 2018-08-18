@@ -9,6 +9,7 @@
         <field name="VzRef" units="" type="float" elements="1" description="Reference sink from polar, for current airspeed" />        
         <field name="Cl" units="" type="float" elements="1" description="Estimated lift coefficient" />
         <field name="Cd" units="" type="float" elements="1" description="Estimated drag coefficient" />
+        <field name="TotalEnergy" units="J" type="float" elements="1"/>
         <field name="GlideRatio" units="" type="float" elements="1"/>
         <access gcs="readwrite" flight="readwrite"/>
         <telemetrygcs acked="false" updatemode="manual" period="0"/>
