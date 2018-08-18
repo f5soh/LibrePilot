@@ -257,7 +257,9 @@ static void aeroTask(__attribute__((unused)) void *parameters)
         }
 
         // Airspeed
-        airspeed_filtered = ((1 - aeroSettings.AirSpeedLowPassAlpha) * (airspeedSensor.CalibratedAirspeed * 3.6f)) + (airspeed_filtered * (aeroSettings.AirSpeedLowPassAlpha));
+        // Choose TrueAirSpeed if available
+        float airspeed = (airspeedSensor.TrueAirspeed > 0) ? airspeedSensor.TrueAirspeed : airspeedSensor.CalibratedAirspeed;
+        airspeed_filtered = ((1 - aeroSettings.AirSpeedLowPassAlpha) * (airspeed * 3.6f)) + (airspeed_filtered * (aeroSettings.AirSpeedLowPassAlpha));
         aerostateData.Airspeed.Current = airspeed_filtered; // Km/h
         aerostateData.Temperature = airspeedSensor.Temperature - 273.15f; // °Celsius
 
@@ -290,18 +292,18 @@ static void aeroTask(__attribute__((unused)) void *parameters)
         aerostateData.VzPolarDef.c = c;
 
         // Reference sink in m/s, for current airspeed (filtered)
-        aerostateData.VzRef = ((a * aerostateData.Airspeed.Current * aerostateData.Airspeed.Current) + (b * aerostateData.Airspeed.Current) + c) / 3.6f;
+        aerostateData.VzRef = ((a * airspeed_filtered * airspeed_filtered) + (b * airspeed_filtered) + c) / 3.6f;
 
         if (docalc && (UAVObjGetNumInstances(AeroClHandle()) == needed_instances)) {
             // Lift coefficient
-            float cl     = aerostateData.Nz.Current * ((v1ms * v1ms) / (airspeedSensor.TrueAirspeed * airspeedSensor.TrueAirspeed));
+            float cl     = aerostateData.Nz.Current * ((v1ms * v1ms) / (airspeed_filtered * airspeed_filtered));
             aerostateData.Cl = boundf(cl, aeroSettings.ClLimits.Min, aeroSettings.ClLimits.Max);
             int cl_index = roundf((aerostateData.Cl / aeroSettings.ClLimits.Resolution) + fabsf(aeroSettings.ClLimits.Min / aeroSettings.ClLimits.Resolution));
             AeroClInstGet(cl_index, &data);
             data.ClCount++;
             AeroClInstSet(cl_index, &data);
             if (velocityState.Down > 0.2f) {
-                aerostateData.GlideRatio = airspeedSensor.TrueAirspeed / velocityState.Down;
+                aerostateData.GlideRatio = airspeed_filtered / velocityState.Down;
                 aerostateData.Cd = aerostateData.Cl / aerostateData.GlideRatio;
             } else {
                 aerostateData.Cd = 0;
